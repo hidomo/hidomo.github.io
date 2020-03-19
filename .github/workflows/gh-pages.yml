@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: '10.x'
+          node-version: '13.x'
 
       - name: Cache dependencies
         uses: actions/cache@v1
@@ -34,7 +34,7 @@ jobs:
         run: npm run cli -- --input ../blog --output ../public
         working-directory: ./mbuilder
 
-      - name: deploy
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
