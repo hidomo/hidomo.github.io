@@ -1,0 +1,47 @@
+#main {
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  display: block;
+  border: gray 1px solid;
+}
+  
+#navigator {
+  border-bottom: gray 1px solid;
+  padding: 0.6em;
+  font-size: large;
+}
+
+#navigator a {
+  color: #2c3e50;
+  text-transform: capitalize;
+}
+
+#navigator a.navigator-link-active {
+  font-weight: bold;
+}
+
+#content {
+  padding-left: 2em;
+  padding-right: 2em;
+}
+
+#content a:any-link {
+  color: black;
+}
+
+body {
+  max-width: 1080px;
+  margin: auto;
+  padding: 1em;
+}
+
+pre {
+  overflow-x: auto;
+}
+
+span.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
