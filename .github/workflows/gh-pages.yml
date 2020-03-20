@@ -27,12 +27,10 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install
-        run: npm ci --prod
-        working-directory: ./mbuilder
+        run: npm install ./mbuilder
 
       - name: Generate Static Blog
-        run: npm run cli -- --input ../blog --output ../public
-        working-directory: ./mbuilder
+        run: npx mbuilder --input blog --output public
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
