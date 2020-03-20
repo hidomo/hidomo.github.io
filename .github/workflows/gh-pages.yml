@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install
-        run: npm install ./mbuilder
+        run: npm install --loglevel=error ./mbuilder
 
       - name: Generate Static Blog
         run: npx mbuilder --input blog --output public
