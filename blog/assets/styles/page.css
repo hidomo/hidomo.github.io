@@ -3,6 +3,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   display: block;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
   
 #navigator ul {
@@ -30,9 +33,20 @@
 
 #content-wrapper {
   background-color: white;
-  border-radius: 0.5rem;
   overflow:hidden;
-  margin-bottom: 3rem;
+}
+
+@media (min-width: 980px) {
+  #content-wrapper {
+    border-radius: 0.5rem;
+    margin-bottom: 3rem;
+  }
+}
+
+@media (max-width: 980px) {
+  #content-wrapper {
+    flex-grow: 1;
+  }
 }
 
 #content {
@@ -56,26 +70,23 @@
 
 #pages-index-title a {
   text-decoration: none;
-  font-size: larger;
 }
 
 #pages-index-date {
   display: inline-block;
   margin-block-start: 0.3rem;
   margin-inline-end: 0.5rem;
-  color: slategray;
+  color: grey;
 }
 
 #pages-index-authors {
   display: inline-block;
-  color: slategray;
+  color: grey;
 }
 
 body {
-  max-width: 1080px;
+  max-width: 980px;
   margin: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
   background-color: whitesmoke;
 }
 
