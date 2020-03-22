@@ -1,9 +1,20 @@
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  max-width: 980px;
+  margin: auto;
+  background-color: whitesmoke;
+}
+
 #main {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   display: block;
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -82,12 +93,6 @@
 #pages-index-authors {
   display: inline-block;
   color: grey;
-}
-
-body {
-  max-width: 980px;
-  margin: auto;
-  background-color: whitesmoke;
 }
 
 pre {
