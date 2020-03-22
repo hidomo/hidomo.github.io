@@ -2,39 +2,81 @@
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
   display: block;
-  border: gray 1px solid;
 }
   
-#navigator {
-  border-bottom: gray 1px solid;
-  padding: 0.6em;
-  font-size: large;
+#navigator ul {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  text-align: right;
+  list-style: none;
+}
+
+#navigator li {
+  display: inline-block;
 }
 
 #navigator a {
-  color: #2c3e50;
-  text-transform: capitalize;
+  margin: 0.5rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: dimgray;
+  font-weight: 500;
 }
 
 #navigator a.navigator-link-active {
-  font-weight: bold;
+  font-weight: 900;
+}
+
+#content-wrapper {
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow:hidden;
+  margin-bottom: 3rem;
 }
 
 #content {
-  padding-left: 2em;
-  padding-right: 2em;
+  margin: 2rem;
 }
 
 #content a:any-link {
   color: black;
 }
 
+
+#pages-index {
+  padding: 0rem;
+  list-style: none;
+}
+
+#pages-index li {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+#pages-index-title a {
+  text-decoration: none;
+  font-size: larger;
+}
+
+#pages-index-date {
+  display: inline-block;
+  margin-block-start: 0.3rem;
+  margin-inline-end: 0.5rem;
+  color: slategray;
+}
+
+#pages-index-authors {
+  display: inline-block;
+  color: slategray;
+}
+
 body {
   max-width: 1080px;
   margin: auto;
-  padding: 1em;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  background-color: whitesmoke;
 }
 
 pre {

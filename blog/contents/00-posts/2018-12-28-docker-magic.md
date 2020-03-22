@@ -1,6 +1,7 @@
 ---
 title: Docker 魔法
 authors: [fancl20]
+date: 2018-12-28
 ---
 
 ### 使用 Docker 作为包管理器代替本地程序

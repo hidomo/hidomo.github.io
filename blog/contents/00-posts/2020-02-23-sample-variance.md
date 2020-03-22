@@ -1,6 +1,7 @@
 ---
 title: 样本方差 (Sample variance)
 authors: [fancl20]
+date: 2020-02-23
 ---
 
 对于随机变量 `$X$` 的 N 个采样值 `$X_1..X_N$`，可得其均值与方差：
