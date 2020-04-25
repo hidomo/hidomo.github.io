@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ThanksForAllTheFish</title>
+    <link rel="stylesheet" href="/assets/styles/katex/katex.min.css">
+    <link rel="stylesheet" href="/assets/styles/hljs/github.css">
+    <link rel="stylesheet" href="/assets/styles/page.css">
+</head>
+
+<body>
+    <div id="main">
+        <div id="navigator"><ul><li><a href="/contents/00-posts.html" class="navigator-link-active">posts</a></li><li><a href="/contents/01-about.html">about</a></li></ul></div>
+        <div id="content-wrapper">
+            <div id="content"><h3 id="使用-docker-作为包管理器代替本地程序">使用 Docker 作为包管理器代替本地程序</h3>
+<p>类似官方 docker-compose 的<a href="https://docs.docker.com/compose/install/#install-as-a-container">做法</a>，对于 cli 程序来说，交互主要通过 stdin/stdout/stderr/文件/网络，docker run 使用 -it 以后可以忽略 stdin/stdout/stderr 的差别，文件可以挂载全盘到容器内相同路径（对 Mac 来说可以挂载 /Users 目录，官方 docker for mac 也是类似的做法），网络的差异需要起代理来屏蔽，比较麻烦，不过场景不太多，可以先忽略。</p>
+<p>这个做法有些地方需要 workaround</p>
+<ol>
+<li>由于可能使用相对路径，在 docker run 的时候需要指定路径 <code>-w $(pwd)</code></li>
+<li>stdin/stdout 可能不是 terminal，需要判断是否要加 <code>-t</code> 参数</li>
+<li>有些场景对程序速度有较高的要求（如 vscode 调用 clang-format 会超时），而 docker run 创建容器基本就要百毫秒，可以使用 docker exec 来避免创建容器的开销</li>
+<li>有的程序依赖环境变量，目前还没有太好的办法，只能将需要的变量在 docker run 的时候一个个透传进去</li>
+</ol>
+<p>最后可以得到一个类似于如下的脚本</p>
+<pre><code class="language-bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-keyword">if</span> [ -t 0 ]; <span class="hljs-keyword">then</span>
+    interactive=<span class="hljs-string">"-t"</span>
+<span class="hljs-keyword">fi</span>
+
+docker run --rm -i <span class="hljs-variable">${interactive}</span> -v /Users:/Users -w $(<span class="hljs-built_in">pwd</span>) --env TERM=xterm-256color \
+    <span class="hljs-variable">${RUN_ARGS}</span> <span class="hljs-variable">${IMAGE}</span> <span class="hljs-string">"<span class="hljs-variable">$@</span>"</span></code></pre>
+<p>docker exec 的脚本更复杂一些，需要调用 docker run 的脚本，不过整体思路类似</p>
+<pre><code class="language-bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-keyword">if</span> [ -t 0 ]; <span class="hljs-keyword">then</span>
+    interactive=<span class="hljs-string">"-t"</span>
+<span class="hljs-keyword">fi</span>
+<span class="hljs-keyword">if</span> [ -z <span class="hljs-string">"<span class="hljs-variable">$(docker ps | grep ${CONTAINER_NAME}$ 2&gt; /dev/null)</span>"</span> ]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">export</span> RUN_ARGS=<span class="hljs-string">"<span class="hljs-variable">${RUN_ARGS}</span> -itd --name=<span class="hljs-variable">${CONTAINER_NAME}</span>"</span>
+    RUN_SCRIPT sh -c <span class="hljs-string">'while true; do sleep 86400; done'</span> &amp;&gt; /dev/null
+<span class="hljs-keyword">fi</span>
+docker <span class="hljs-built_in">exec</span> -i <span class="hljs-variable">${interactive}</span> -w `<span class="hljs-built_in">pwd</span>` \
+    <span class="hljs-variable">${CONTAINER_NAME}</span> <span class="hljs-string">"<span class="hljs-variable">$@</span>"</span></code></pre>
+<p>如需要 jq 就可以创建一个叫 jq 的脚本放在 PATH 中</p>
+<pre><code class="language-bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-built_in">export</span> CONTAINER_NAME=jq
+RUN_SCRIPT jq <span class="hljs-string">"<span class="hljs-variable">$@</span>"</span></code></pre>
+<p>类似的，clang-format 的脚本</p>
+<pre><code class="language-bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-built_in">export</span> CONTAINER_NAME=clang
+EXEC_SCRIPT clang-format <span class="hljs-string">"<span class="hljs-variable">$@</span>"</span></code></pre>
+<h3 id="使用远程-docker-代替本地程序">使用远程 Docker 代替本地程序</h3>
+<p>在使用 Docker 作为包管理器代替本地程序的基础上，考虑到笔记本性能不佳，用远程台式机配合 Docker 代替本地程序可以无缝提升本地程序的性能（如远程调用 cmake &amp; make，可以大幅提升编译效率），或者无缝调用远程的 GPU。这个方案需要解决的问题主要是如何远程挂载本地磁盘到远程，docker 本身支持 nfs 可以达到这个效果。</p>
+<p>首先需要在本地机器上起一个 nfsd（以 Mac 为例）</p>
+<pre><code class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">"/Users -alldirs -mapall=<span class="hljs-variable">$(id -u)</span>:<span class="hljs-variable">$(id -g)</span> <span class="hljs-variable">${REMOTE_IP}</span>"</span> | sudo tee /etc/exports
+sudo nfsd start <span class="hljs-comment"># or restart</span></code></pre>
+<p>再在 docker 中添加对应 volumn</p>
+<pre><code class="language-bash">docker volume create --driver <span class="hljs-built_in">local</span> \
+    --opt <span class="hljs-built_in">type</span>=nfs --opt o=addr=<span class="hljs-variable">${LOCAL_IP}</span>,rw,nolock,hard,nointr,nfsvers=3 \
+    --opt device=<span class="hljs-string">":/Users"</span> <span class="hljs-variable">${VOLUME_NAME}</span></code></pre>
+<p>最后在 docker run 的参数中将 <code>-v /Users:/Users</code> 变为 <code>-v ${VOLUME_NAME}:/Users</code></p>
+<p>为了方便在拔掉 docker 之后自动切换成本机的 docker，在 PATH 中增加一个 docker 脚本</p>
+<pre><code class="language-bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-keyword">if</span> ifconfig | grep -q 192.168.0.1; <span class="hljs-keyword">then</span>
+    DOCKER_HOST=<span class="hljs-variable">${REMOTE_DOCKER}</span> /usr/<span class="hljs-built_in">local</span>/bin/docker --config <span class="hljs-variable">${CONFIG}</span> <span class="hljs-string">"<span class="hljs-variable">$@</span>"</span>
+<span class="hljs-keyword">else</span>
+    /usr/<span class="hljs-built_in">local</span>/bin/docker <span class="hljs-string">"<span class="hljs-variable">$@</span>"</span>
+<span class="hljs-keyword">fi</span></code></pre>
+<p>这里依靠了一个静态 IP 来检测是不是插上了 dock，也可以使用更通用/安全的方法。</p>
+<p>需要 workaround 的地方：</p>
+<ol>
+<li>由于我的台式机网线直接插在了笔记本 dock 上，本身没有外网，需要通过代理上网，docker build 等步骤需要配置代理，环境变量跨机器没有效果，根据<a href="https://docs.docker.com/network/proxy/">官方文档</a>在<strong>本地机器</strong>的 docker 配置代理（httpProxy 与 httpsProxy）</li>
+<li>对于原本正常使用，需要 mount 本地路径的 docker run 来说，由于远程不存在对应的路径，需要改为直接访问被 mount 进来的路径，可以直接在远程机器的系统上 mount nfs 来避免这个问题，没有太好的在 docker 内解决的方法</li>
+</ol>
+</div>
+        </div>
+    </div>
+</body>
+
+</html>
